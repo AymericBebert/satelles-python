@@ -72,7 +72,7 @@ def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
                 "type": "info",
             },
             {
-                "name": f"Illuminance: {light_data['illum_lux']:d} lux",
+                "name": f"Illuminance: {int(light_data['illum_lux'])} lux",
                 "type": "info",
             },
             {
