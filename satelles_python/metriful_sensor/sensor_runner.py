@@ -3,17 +3,17 @@ from threading import Thread
 
 import satelles_python.metriful_sensor.sensor_package.sensor_constants as const
 import satelles_python.metriful_sensor.sensor_package.sensor_functions as sensor
-from satelles_python.command_register import command_register
-from satelles_python.model import CommandRunner, CommandType, ICommand, IImperiumAction
+from satelles_python.command_register import CommandRegister
+from satelles_python.command_runner import CommandRunner
+from satelles_python.model import ICommand, IImperiumAction
 
 
 class SensorRunner(CommandRunner):
     name: str = "sensor"
 
-    def __init__(self):
+    def __init__(self, command_register: CommandRegister):
+        super().__init__(command_register)
         self.commands: list[ICommand] = []
-
-    def init(self) -> None:
         send_metrics(self)
 
     def connect(self) -> None:
@@ -64,60 +64,60 @@ def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
         commands.extend([
             ICommand(
                 name=f"Temperature: {air_data['T']:.1f} {air_data['T_unit']}",
-                type=CommandType.info,
+                type="info",
             ),
             ICommand(
                 name=f"Humidity: {air_data['H_pc']} %",
-                type=CommandType.info,
+                type="info",
             ),
             ICommand(
                 name=f"Pressure: {air_data['P_Pa'] / 100:.2f} hPa",
-                type=CommandType.info,
+                type="info",
             ),
         ])
         if air_quality_data['AQI_accuracy'] > 0:
             commands.extend([
                 ICommand(
                     name=f"Air Quality Index: {air_quality_data['AQI']:.1f} ({sensor.interpret_AQI_value(air_quality_data['AQI'])})",
-                    type=CommandType.info,
+                    type="info",
                 ),
                 ICommand(
                     name=f"Estimated CO2: {air_quality_data['CO2e']:.1f} ppm",
-                    type=CommandType.info,
+                    type="info",
                 ),
                 ICommand(
                     name=f"Equivalent Breath VOC: {air_quality_data['bVOC']:.2f} ppm",
-                    type=CommandType.info,
+                    type="info",
                 ),
             ])
         commands.extend([
             ICommand(
                 name=f"Air Quality Accuracy: {sensor.interpret_AQI_accuracy(air_quality_data['AQI_accuracy'])}",
-                type=CommandType.info,
+                type="info",
             ),
         ])
         if particle_data:
             commands.extend([
                 ICommand(
                     name=f"Particle concentration: {particle_data['concentration']:.2f} {particle_data['conc_unit']}",
-                    type=CommandType.info,
+                    type="info",
                 ),
             ])
         commands.extend([
             ICommand(
                 name=f"Illuminance: {int(light_data['illum_lux'])} lux",
-                type=CommandType.info,
+                type="info",
             ),
             ICommand(
                 name=f"Sound level: {sound_data['SPL_dBA']:.1f} dBA",
-                type=CommandType.info,
+                type="info",
             ),
             # ICommand(
             #     name=f"Sound peak: {sound_data['peak_amp_mPa']:.2f} mPa",
-            #     type=CommandType.info,
+            #     type="info",
             # ),
         ])
 
         # Send data to Rerum Imperium
         runner.commands = commands
-        command_register.on_commands(runner, runner.commands)
+        runner.command_register.on_commands(runner, runner.commands)

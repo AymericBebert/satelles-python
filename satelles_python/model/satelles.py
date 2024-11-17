@@ -1,28 +1,11 @@
-from enum import Enum
-from typing import Any
+from typing import Literal
 
-from pydantic import BaseModel
-
-
-class CommandType(str, Enum):
-    info = "info"
-    action = "action"
-    complex = "complex"
-    UNKNOWN = "UNKNOWN"
+from .camel_case_model import CamelCaseModel
 
 
-class CommandArgType(str, Enum):
-    string = "string"
-    number = "number"
-    boolean = "boolean"
-    color = "color"
-    select = "select"
-    UNKNOWN = "UNKNOWN"
-
-
-class IArg(BaseModel):
+class IArg(CamelCaseModel):
     name: str
-    type: CommandArgType
+    type: Literal["string", "number", "boolean", "color", "select"]
     string_value: str | None = None
     number_value: float | None = None
     number_min: float | None = None
@@ -33,48 +16,20 @@ class IArg(BaseModel):
     select_value: str | None = None
     select_options: list[str] | None = None
 
-    @staticmethod
-    def from_dict(data: dict[str, Any]) -> "IArg":
-        return IArg(**data)
 
-    def to_dict(self) -> dict[str, Any]:
-        return self.model_dump()
-
-
-class ICommand(BaseModel):
+class ICommand(CamelCaseModel):
     name: str
-    type: CommandType
+    type: Literal["info", "action", "complex"]
     args: list[IArg] | None = None
 
-    @staticmethod
-    def from_dict(data: dict[str, Any]) -> "ICommand":
-        return ICommand(**data)
 
-    def to_dict(self) -> dict[str, Any]:
-        return self.model_dump()
-
-
-class ISatelles(BaseModel):
+class ISatelles(CamelCaseModel):
     id: str
     name: str
     commands: list[ICommand]
 
-    @staticmethod
-    def from_dict(data: dict[str, Any]) -> "ISatelles":
-        return ISatelles(**data)
 
-    def to_dict(self) -> dict[str, Any]:
-        return self.model_dump()
-
-
-class IAnnounce(BaseModel):
+class IAnnounce(CamelCaseModel):
     token: str
-    roomName: str
+    room_name: str
     satelles: ISatelles
-
-    @staticmethod
-    def from_dict(data: dict[str, Any]) -> "IAnnounce":
-        return IAnnounce(**data)
-
-    def to_dict(self) -> dict[str, Any]:
-        return self.model_dump()
