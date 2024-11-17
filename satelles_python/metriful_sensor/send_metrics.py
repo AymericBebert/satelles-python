@@ -55,7 +55,7 @@ def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
         air_quality_data = sensor.get_air_quality_data(I2C_bus)
         light_data = sensor.get_light_data(I2C_bus)
         sound_data = sensor.get_sound_data(I2C_bus)
-        particle_data = sensor.get_particle_data(I2C_bus, sensor.PARTICLE_SENSOR)
+        # particle_data = sensor.get_particle_data(I2C_bus, sensor.PARTICLE_SENSOR)
 
         # Send data to Rerum Imperium
         runner.commands = [
@@ -64,15 +64,15 @@ def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
                 "type": "info",
             },
             {
-                "name": f"Humidity: {air_data['H_pc']} %",
+                "name": f"Humidity: {air_data['H_pc']}%",
                 "type": "info",
             },
             {
-                "name": f"Pressure: {air_data['P_Pa']} Pa",
+                "name": f"Pressure: {air_data['P_Pa'] / 100:.2f} hPa",
                 "type": "info",
             },
             {
-                "name": f"Illuminance: {light_data['illum_lux']:.2f} lx",
+                "name": f"Illuminance: {light_data['illum_lux']:d} lux",
                 "type": "info",
             },
             {
@@ -91,9 +91,9 @@ def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
                 "name": f"Air quality assessment: {sensor.interpret_AQI_value(air_quality_data['AQI'])}",
                 "type": "info",
             },
-            {
-                "name": f"Particle concentration: {particle_data['concentration']:.2f} {particle_data['conc_unit']}",
-                "type": "info",
-            },
+            # {
+            #     "name": f"Particle concentration: {particle_data['concentration']:.2f} {particle_data['conc_unit']}",
+            #     "type": "info",
+            # },
         ]
         command_register.on_commands(runner, runner.commands)

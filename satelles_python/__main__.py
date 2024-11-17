@@ -4,8 +4,6 @@ import socketio
 from .command_register import command_register
 from .model import Config, IImperiumAction
 
-print(configue.load("config.yml"))
-
 config = Config.from_dict(configue.load("config.yml"))
 
 sio = socketio.Client()

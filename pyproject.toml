@@ -15,7 +15,7 @@ dev = [
 
 sensor = [
     "smbus",
-    "RPi.GPIO",
+    "rpi-lgpio",
 ]
 
 [build-system]
