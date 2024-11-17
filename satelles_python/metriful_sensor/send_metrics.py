@@ -89,11 +89,13 @@ def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
                     name=f"Equivalent Breath VOC: {air_quality_data['bVOC']:.2f} ppm",
                     type=CommandType.info,
                 ),
-                ICommand(
-                    name=f"Air Quality Accuracy: {sensor.interpret_AQI_accuracy(air_quality_data['AQI_accuracy'])}",
-                    type=CommandType.info,
-                ),
             ])
+        commands.extend([
+            ICommand(
+                name=f"Air Quality Accuracy: {sensor.interpret_AQI_accuracy(air_quality_data['AQI_accuracy'])}",
+                type=CommandType.info,
+            ),
+        ])
         if particle_data:
             commands.extend([
                 ICommand(
@@ -110,10 +112,10 @@ def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
                 name=f"Sound level: {sound_data['SPL_dBA']:.1f} dBA",
                 type=CommandType.info,
             ),
-            ICommand(
-                name=f"Sound peak: {sound_data['peak_amp_mPa']:.2f} mPa",
-                type=CommandType.info,
-            ),
+            # ICommand(
+            #     name=f"Sound peak: {sound_data['peak_amp_mPa']:.2f} mPa",
+            #     type=CommandType.info,
+            # ),
         ])
 
         # Send data to Rerum Imperium
