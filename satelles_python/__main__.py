@@ -17,7 +17,7 @@ def connect():
         "satelles": {
             "id": config.hub.device_id,
             "name": config.hub.device_name,
-            "commands": command_register.commands,
+            "commands": [c.to_dict() for c in command_register.commands],
         },
     })
     command_register.connect(sio)

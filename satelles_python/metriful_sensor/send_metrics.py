@@ -67,7 +67,7 @@ def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
                 type=CommandType.info,
             ),
             ICommand(
-                name=f"Humidity: {air_data['H_pc']}%",
+                name=f"Humidity: {air_data['H_pc']} %",
                 type=CommandType.info,
             ),
             ICommand(
