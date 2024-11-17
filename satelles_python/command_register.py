@@ -41,10 +41,11 @@ class CommandRegister:
 
     def _update_commands(self) -> None:
         if self._sio is not None:
-            commands_str = json.dumps(self.commands)
+            commands_dto = [c.to_dict() for c in self.commands]
+            commands_str = json.dumps(commands_dto)
             if commands_str != self._last_commands:
                 self._last_commands = commands_str
-                self._sio.emit("satelles update", self.commands)
+                self._sio.emit("satelles update", commands_dto)
 
 
 command_register = CommandRegister()
