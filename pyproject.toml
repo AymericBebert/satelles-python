@@ -1,0 +1,51 @@
+[project]
+name = "satelles_python"
+description = "Satelles for the Rerum Imperium project"
+version = "1.0.0"
+dependencies = [
+    "configue~=5.0.0",
+    "pydantic~=2.9.2",
+    "python-socketio[client]~=5.11.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+]
+
+sensor = [
+    "smbus",
+    "RPi.GPIO",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = [
+    "satelles_python",
+]
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+lint.select = ["E", "F", "Q"]
+lint.ignore = []
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+lint.fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID", "TRY", "UP", "YTT"]
+lint.unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".eggs",
+    ".git",
+    ".ruff_cache",
+    "venv",
+    "satelles_python/metriful_sensor/sensor_package",
+]
+
+line-length = 120
+
+# Allow unused variables when underscore-prefixed.
+lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
