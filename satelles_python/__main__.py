@@ -22,7 +22,7 @@ def connect():
             "commands": command_register.commands,
         },
     })
-    command_register.connect()
+    command_register.connect(sio)
 
 
 @sio.event

@@ -14,8 +14,7 @@ class SensorRunner(CommandRunner):
         self.commands: list[ICommand] = []
 
     def init(self) -> None:
-        thread = Thread(target=send_metrics_loop, args=(self,))
-        thread.start()
+        send_metrics(self)
 
     def connect(self) -> None:
         pass
@@ -27,7 +26,7 @@ class SensorRunner(CommandRunner):
         pass
 
 
-def send_metrics_loop(runner: SensorRunner):
+def send_metrics(runner: SensorRunner):
     # How often to read and report the data (every 3, 100 or 300 seconds)
     cycle_period = const.CYCLE_PERIOD_3_S
 
@@ -41,6 +40,11 @@ def send_metrics_loop(runner: SensorRunner):
     # Enter cycle mode
     I2C_bus.write_byte(sensor.i2c_7bit_address, const.CYCLE_MODE_CMD)
 
+    thread = Thread(target=send_metrics_loop, args=(runner, GPIO, I2C_bus))
+    thread.start()
+
+
+def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
     while True:
         # Wait for the next new data release, indicated by a falling edge on READY
         while not GPIO.event_detected(sensor.READY_pin):
@@ -93,48 +97,3 @@ def send_metrics_loop(runner: SensorRunner):
             },
         ]
         command_register.on_commands(runner, runner.commands)
-
-        # # Specify information needed by Home Assistant.
-        # # Icons are chosen from https://cdn.materialdesignicons.com/5.3.45/
-        # temperature = dict(name='Temperature', data=air_data['T'],
-        #                    unit=air_data['T_unit'], icon='thermometer', decimals=1)
-        # humidity = dict(name='Humidity', data=air_data['H_pc'], unit='%',
-        #                 icon='water-percent', decimals=1)
-        # pressure = dict(name='Pressure', data=air_data['P_Pa'], unit='Pa',
-        #                 icon='weather-cloudy', decimals=0)
-        # illuminance = dict(name='Illuminance', data=light_data['illum_lux'],
-        #                    unit='lx', icon='white-balance-sunny', decimals=2)
-        # sound_level = dict(name='Sound level', data=sound_data['SPL_dBA'],
-        #                    unit='dBA', icon='microphone', decimals=1)
-        # sound_peak = dict(name='Sound peak', data=sound_data['peak_amp_mPa'],
-        #                   unit='mPa', icon='waveform', decimals=2)
-        # AQI = dict(name='Air Quality Index', data=air_quality_data['AQI'],
-        #            unit=' ', icon='thought-bubble-outline', decimals=1)
-        # AQI_interpret = dict(name='Air quality assessment',
-        #                      data=sensor.interpret_AQI_value(air_quality_data['AQI']),
-        #                      unit='', icon='flower-tulip', decimals=0)
-        # particle = dict(name='Particle concentration', data=particle_data['concentration'],
-        #                 unit=particle_data['conc_unit'], icon='chart-bubble', decimals=2)
-        #
-        # # Send data to Home Assistant using HTTP POST requests
-        # variables = [pressure, humidity, temperature, illuminance, sound_level, sound_peak, AQI, AQI_interpret]
-        # if sensor.PARTICLE_SENSOR != const.PARTICLE_SENSOR_OFF:
-        #     variables.append(particle)
-        # try:
-        #     for v in variables:
-        #         try:
-        #             valueStr = "{:.{dps}f}".format(v['data'], dps=v['decimals'])
-        #         except Exception:
-        #             valueStr = v['data']
-        #         payload = {"state": valueStr, "attributes": {
-        #             "unit_of_measurement": v['unit'], "friendly_name": v['name'],
-        #             "icon": "mdi:" + v['icon']}}
-        #         requests.post(url, json=payload, headers=head, timeout=2)
-        # except Exception as e:
-        #     # An error has occurred, likely due to a lost network connection,
-        #     # and the post has failed.
-        #     # The program will retry with the next data release and will succeed
-        #     # if the network reconnects.
-        #     print("HTTP POST failed with the following error:")
-        #     print(repr(e))
-        #     print("The program will continue and retry on the next data output.")
