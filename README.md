@@ -54,7 +54,7 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/home/pi/satelles-python
-ExecStart=/home/pi/.nvm/versions/node/v20.18.0/bin/node /home/pi/satelles-python/dist/server.js
+ExecStart=/home/pi/satelles-python/venv/bin/python -m satelles_python
 Restart=on-failure
 
 [Install]

@@ -6,6 +6,7 @@ hub:
   deviceName: 'Python Satelles (dev)'
 
 commands:
+  - debug
   - sensor
 
 misc:
