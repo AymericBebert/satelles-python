@@ -1,3 +1,5 @@
+import time
+
 import configue
 import socketio
 
@@ -29,12 +31,14 @@ def connect():
 
 
 @sio.event
-def connect_error():
+def connect_error(reason: dict[str, str]):
+    print('connect_error', reason)
     command_register.disconnect()
 
 
 @sio.event
 def disconnect():
+    print('disconnect')
     command_register.disconnect()
 
 
@@ -56,8 +60,19 @@ if "debug" in config.commands:
 
     debug_runner = DebugRunner(command_register)
 
-sio.connect(config.hub.server_url)
+wait_for = 1
 
 while True:
+    if not sio.connected:
+        try:
+            print(f"Connecting to {config.hub.server_url}")
+            sio.connect(config.hub.server_url)
+        except Exception as e:
+            print(f'Connection error (retrying in {wait_for}s):', e)
+            time.sleep(wait_for)
+            if wait_for < 32:
+                wait_for *= 2
+            continue
+    wait_for = 1
     print("Waiting for events...")
     sio.wait()
