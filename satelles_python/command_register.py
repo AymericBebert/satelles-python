@@ -50,4 +50,7 @@ class CommandRegister:
                 self._last_commands = commands_str
                 if self.config.misc.debug_socket:
                     print("satelles update:", commands_dto)
-                self._sio.emit("satelles update", commands_dto)
+                try:
+                    self._sio.emit("satelles update", commands_dto)
+                except Exception as e:
+                    print("Error sending satelles update:", e)
