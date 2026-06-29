@@ -9,7 +9,9 @@ from .model import Config, IAnnounce, IImperiumAction, ISatelles
 config = Config(**configue.load("config.yml"))
 command_register = CommandRegister(config)
 
-sio = socketio.Client()
+# Reconnection is handled by the outer loop below so the client does not get
+# stuck in its own background retry task after a transport error.
+sio = socketio.Client(reconnection=False)
 
 
 @sio.event
@@ -25,27 +27,27 @@ def connect():
     )
     announce_dto = announce.to_dict()
     if config.misc.debug_socket:
-        print('satelles join:', announce_dto)
+        print("satelles join:", announce_dto)
     sio.emit("satelles join", announce_dto)
     command_register.connect(sio)
 
 
 @sio.event
 def connect_error(reason: dict[str, str]):
-    print('connect_error', reason)
+    print("connect_error", reason)
     command_register.disconnect()
 
 
 @sio.event
 def disconnect():
-    print('disconnect')
+    print("disconnect")
     command_register.disconnect()
 
 
-@sio.on('imperium action')
+@sio.on("imperium action")
 def on_imperium_action(action_dto: dict):
     if config.misc.debug_socket:
-        print('imperium action:', action_dto)
+        print("imperium action:", action_dto)
     action = IImperiumAction(**action_dto)
     command_register.on_action(action)
 
@@ -68,7 +70,7 @@ while True:
             print(f"Connecting to {config.hub.server_url}")
             sio.connect(config.hub.server_url)
         except Exception as e:
-            print(f'Connection error (retrying in {wait_for}s):', e)
+            print(f"Connection error (retrying in {wait_for}s):", e)
             time.sleep(wait_for)
             if wait_for < 32:
                 wait_for *= 2
