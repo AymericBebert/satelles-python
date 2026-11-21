@@ -26,28 +26,66 @@ class SensorRunner(CommandRunner):
         pass
 
 
-def send_metrics(runner: SensorRunner):
-    # How often to read and report the data (every 3, 100 or 300 seconds)
-    cycle_period = const.CYCLE_PERIOD_3_S
+# How often to read and report the data (every 3, 100 or 300 seconds)
+CYCLE_PERIOD = const.CYCLE_PERIOD_3_S
+# If no new data is announced within this delay, the sensor is considered stuck
+READY_TIMEOUT_S = 30
+RETRY_DELAY_S = 5
 
+
+def setup_sensor():
     # Set up the GPIO and I2C communications bus
     (GPIO, I2C_bus) = sensor.SensorHardwareSetup()
 
     # Apply the settings to the MS430
     I2C_bus.write_i2c_block_data(sensor.i2c_7bit_address, const.PARTICLE_SENSOR_SELECT_REG, [sensor.PARTICLE_SENSOR])
-    I2C_bus.write_i2c_block_data(sensor.i2c_7bit_address, const.CYCLE_TIME_PERIOD_REG, [cycle_period])
+    I2C_bus.write_i2c_block_data(sensor.i2c_7bit_address, const.CYCLE_TIME_PERIOD_REG, [CYCLE_PERIOD])
 
     # Enter cycle mode
     I2C_bus.write_byte(sensor.i2c_7bit_address, const.CYCLE_MODE_CMD)
+    return GPIO, I2C_bus
 
-    thread = Thread(target=send_metrics_loop, args=(runner, GPIO, I2C_bus))
+
+def teardown_sensor(GPIO, I2C_bus) -> None:
+    try:
+        GPIO.remove_event_detect(sensor.READY_pin)
+    except Exception:
+        pass
+    try:
+        I2C_bus.close()
+    except Exception:
+        pass
+
+
+def send_metrics(runner: SensorRunner):
+    (GPIO, I2C_bus) = setup_sensor()
+    thread = Thread(target=send_metrics_loop, args=(runner, GPIO, I2C_bus), daemon=True)
     thread.start()
 
 
 def send_metrics_loop(runner: SensorRunner, GPIO, I2C_bus):
+    # Never let a sensor error kill the thread: values would silently stop updating
+    while True:
+        try:
+            if GPIO is None:
+                (GPIO, I2C_bus) = setup_sensor()
+                print("Sensor re-initialized", flush=True)
+            read_and_send_metrics(runner, GPIO, I2C_bus)
+        except Exception as e:
+            print(f"Sensor error (re-initializing in {RETRY_DELAY_S}s): {e!r}", flush=True)
+            if GPIO is not None:
+                teardown_sensor(GPIO, I2C_bus)
+            GPIO, I2C_bus = None, None
+            time.sleep(RETRY_DELAY_S)
+
+
+def read_and_send_metrics(runner: SensorRunner, GPIO, I2C_bus):
     while True:
         # Wait for the next new data release, indicated by a falling edge on READY
+        deadline = time.monotonic() + READY_TIMEOUT_S
         while not GPIO.event_detected(sensor.READY_pin):
+            if time.monotonic() > deadline:
+                raise TimeoutError(f"no data ready signal for {READY_TIMEOUT_S}s")
             time.sleep(0.05)
 
         # Now read all data from the MS430

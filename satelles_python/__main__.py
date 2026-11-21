@@ -1,3 +1,4 @@
+import sys
 import time
 
 import configue
@@ -5,6 +6,9 @@ import socketio
 
 from .command_register import CommandRegister
 from .model import Config, IAnnounce, IImperiumAction, ISatelles
+
+# Under systemd stdout is block-buffered, which delays logs and garbles timestamps
+sys.stdout.reconfigure(line_buffering=True)
 
 config = Config(**configue.load("config.yml"))
 command_register = CommandRegister(config)
