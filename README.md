@@ -10,7 +10,7 @@ Create the config file from template (then edit it to suit your env)
 cp config.template.yml config.yml
 ```
 
-Create a virtualenv with
+Python 3.10 or newer is required. Create a virtualenv with
 
 ```shell
 python3.13 -m venv venv
@@ -38,6 +38,12 @@ python -m satelles_python
 
 ```shell
 ruff check satelles_python
+```
+
+## Run tests
+
+```shell
+python -m unittest discover -s tests
 ```
 
 ## Install as a service

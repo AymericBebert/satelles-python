@@ -2,10 +2,11 @@
 name = "satelles_python"
 description = "Satelles for the Rerum Imperium project"
 version = "1.0.0"
+requires-python = ">=3.10"
 dependencies = [
-    "configue~=5.0.0",
-    "pydantic~=2.9.2",
-    "python-socketio[client]~=5.11.4",
+    "configue~=6.0.2",
+    "pydantic~=2.14.4",
+    "python-socketio[client]~=5.18.1",
 ]
 
 [project.optional-dependencies]
