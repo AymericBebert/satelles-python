@@ -43,7 +43,7 @@ def connect_error(reason: dict[str, str]):
 
 
 @sio.event
-def disconnect(reason: str):
+def disconnect(reason: str | None = None):
     print("disconnected", reason)
     command_register.disconnect()
 
